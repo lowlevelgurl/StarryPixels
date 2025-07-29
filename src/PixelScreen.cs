@@ -1,8 +1,9 @@
 using Raylib_cs;
+using System.Numerics;
 
 class PixelScreen {
-  static Int32[] RGBAFilter(Color originalColor, Int32 rSize, Int32 gSize, Int32 bSize, Int32 aSize) {
-    Int32 r, g, b, a;
+  static Int32[] RGBAFilter(Color originalColor, Int32 rSize, Int32 gSize, Int32 bSize) {
+    Int32 r, g, b;
     if ((originalColor.R + rSize) > 255) {
       r = 255;
     } else if ((originalColor.R + rSize) < 0) {
@@ -27,17 +28,9 @@ class PixelScreen {
       b = originalColor.B + bSize;
     }
 
-    if ((originalColor.A + aSize) > 255) {
-      a = 255;
-    } else if ((originalColor.A + aSize) < 0) {
-      a = 0;
-    } else {
-      a = originalColor.A + aSize;
-    }
+    Int32[] rgb = {r, g, b};
 
-    Int32[] rgba = {r, g, b, a};
-
-    return rgba;
+    return rgb;
   }
 
   public static RenderTexture2D Make(
@@ -46,18 +39,28 @@ class PixelScreen {
     Int32 rSize,
     Int32 gSize,
     Int32 bSize,
-    Int32 aSize,
-    RenderTexture2D target
+    RenderTexture2D target,
+    Texture2D screenTexture
   ) {
     Raylib.BeginTextureMode(target);
 
     for (Int32 y = 0; y < sourceImage.Height; y += pixelable) {
       for (Int32 x = 0; x < sourceImage.Width; x += pixelable) {
-        Int32[] pixel = RGBAFilter(Raylib.GetImageColor(sourceImage, x, y), rSize, gSize, bSize, aSize);
-        Color blockColor = new Color(pixel[0], pixel[1], pixel[2], pixel[3]);
+        Int32[] pixel = RGBAFilter(Raylib.GetImageColor(sourceImage, x, y), rSize, gSize, bSize);
+        Color blockColor = new Color(pixel[0], pixel[1], pixel[2], 255);
         Raylib.DrawRectangle(x, y, pixelable, pixelable, blockColor);
       }
     }
+
+    /* Raylib.DrawTextureRec(
+      screenTexture,
+      new Rectangle (0, 0, screenTexture.Width, screenTexture.Height),
+      new Vector2 (
+        0.0f,
+        0.0f
+      ),
+      Color.White
+    ); */
 
     Raylib.EndTextureMode();
 
